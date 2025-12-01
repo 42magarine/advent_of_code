@@ -8,7 +8,7 @@ using namespace std;
 
 int main(int argc, char** argv) {
     (void) argc;
-    
+
     ifstream file(argv[1]);
     string line;
     vector<pair<char, int>> input;
@@ -26,15 +26,15 @@ int main(int argc, char** argv) {
     int start = 50;
     for (auto rotation : input) {
         if (rotation.first == 'L') {
-            start = ((start + rotation.second) + 100) % 100;
+            start = (((start - rotation.second) % 100) + 100) % 100;
         }
         else if (rotation.first == 'R') {
-            start = ((start - rotation.second) + 100) % 100;
+            start = (((start + rotation.second) % 100) + 100) % 100;
         }
         else {
             cout << "error" << endl;
         }
-
+        cout << start << " ";
         if (start == 0) {
             count++;
         }
