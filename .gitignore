@@ -33,5 +33,5 @@
 
 .vscode
 **/puzzle
-**/adventofcode
+**/aoc*
 **/test*
