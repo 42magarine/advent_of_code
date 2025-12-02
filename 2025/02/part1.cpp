@@ -12,6 +12,7 @@ struct IdRange {
     string lastId;
 };
 
+// Parse input file containing comma-separated ranges like "11-22,95-115,998-1012"
 vector<IdRange> parseInput(const string& filename) {
     ifstream file(filename);
     if (!file.is_open()) {
@@ -83,6 +84,7 @@ vector<string> findInvalidCandidates(const IdRange& range) {
     return candidates;
 }
 
+// Compute sum of all invalid IDs across all ranges
 long long computeSumOfInvalidIds(const vector<IdRange>& ranges) {
     long long sum = 0;
 
