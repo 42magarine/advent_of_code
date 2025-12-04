@@ -3,33 +3,30 @@
 #include <string>
 #include <sstream>
 #include <vector>
-#include <cstdlib> // exit
-
-using namespace std;
 
 struct IdRange {
-    string firstId;
-    string lastId;
+    std::string firstId;
+    std::string lastId;
 };
 
 // Parse input file containing comma-separated ranges like "11-22,95-115,998-1012"
-vector<IdRange> parseInput(const string& filename) {
-    ifstream file(filename);
+std::vector<IdRange> parseInput(const std::string& filename) {
+    std::ifstream file(filename);
     if (!file.is_open()) {
-        cerr << "Could not open file: " << filename << endl;
-        exit(1);
+        std::cerr << "Could not open file: " << filename << std::endl;
+        return {};
     }
 
-    vector<IdRange> ranges;
-    string line;
+    std::vector<IdRange> ranges;
+    std::string line;
 
-    if (getline(file, line)) {
-        stringstream ss(line);
-        string range;
+    if (std::getline(file, line)) {
+        std::stringstream ss(line);
+        std::string range;
 
-        while (getline(ss, range, ',')) {
+        while (std::getline(ss, range, ',')) {
             size_t dashPos = range.find('-');
-            if (dashPos != string::npos) {
+            if (dashPos != std::string::npos) {
                 ranges.push_back({
                     range.substr(0, dashPos),
                     range.substr(dashPos + 1)
@@ -44,12 +41,12 @@ vector<IdRange> parseInput(const string& filename) {
 // Check if a string consists of a repeating pattern
 // Uses mathematical trick:
 // S is repeating if S appears in (S+S) before position |S|
-bool isRepeated(const string& idAsString) {
+bool isRepeated(const std::string& idAsString) {
     if (idAsString.size() < 2) {
         return false;
     }
 
-    string doubled = idAsString + idAsString;
+    std::string doubled = idAsString + idAsString;
 
     // Search for the original string starting from position 1
     size_t pos = doubled.find(idAsString, 1);
@@ -59,18 +56,18 @@ bool isRepeated(const string& idAsString) {
 }
 
 // Compute sum of all invalid IDs across all ranges
-long long computeSumOfInvalidIds(const vector<IdRange>& ranges) {
+long long computeSumOfInvalidIds(const std::vector<IdRange>& ranges) {
     long long sum = 0;
 
     for (const auto& range : ranges) {
-        long long start = stoll(range.firstId);
-        long long end = stoll(range.lastId);
+        long long start = std::stoll(range.firstId);
+        long long end = std::stoll(range.lastId);
 
         // Check each ID in the range
-        for (long long i = start; i <= end; i++) {
-            if (isRepeated(to_string(i))) {
-                cout << range.firstId << "-" << range.lastId
-                     << " has invalid ID " << i << "." << endl;
+        for (long long i = start; i <= end; ++i) {
+            if (isRepeated(std::to_string(i))) {
+                std::cout << range.firstId << "-" << range.lastId
+                          << " has invalid ID " << i << "." << std::endl;
                 sum += i;
             }
         }
@@ -81,14 +78,18 @@ long long computeSumOfInvalidIds(const vector<IdRange>& ranges) {
 
 int main(int argc, char** argv) {
     if (argc != 2) {
-        cerr << "Usage: " << argv[0] << " <input_file>" << endl;
+        std::cerr << "Usage: " << argv[0] << " <input_file>" << std::endl;
         return 1;
     }
 
-    vector<IdRange> ranges = parseInput(argv[1]);
-    long long result = computeSumOfInvalidIds(ranges);
+    auto puzzleInput = parseInput(argv[1]);
+    if (puzzleInput.empty()) {
+        std::cerr << "Failed to parse input" << std::endl;
+        return 1;
+    }
 
-    cout << "Sum of all invalid IDs: " << result << endl;
+    long long result = computeSumOfInvalidIds(puzzleInput);
+    std::cout << "Sum of all invalid IDs: " << result << std::endl;
 
     return 0;
 }

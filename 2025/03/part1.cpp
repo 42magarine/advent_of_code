@@ -2,23 +2,20 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include <cstdlib> // exit
-
-using namespace std;
 
 // Parse input file where each line contains single digits (0-9)
-vector<vector<int>> parseInput(const string& filename) {
-    ifstream file(filename);
+std::vector<std::vector<int>> parseInput(const std::string& filename) {
+    std::ifstream file(filename);
     if (!file.is_open()) {
-        cerr << "Could not open file: " << filename << endl;
-        exit(1);
+        std::cerr << "Could not open file: " << filename << std::endl;
+        return {};
     }
 
-    vector<vector<int>> grid;
-    string line;
+    std::vector<std::vector<int>> grid;
+    std::string line;
 
-    while (getline(file, line)) {
-        vector<int> row;
+    while (std::getline(file, line)) {
+        std::vector<int> row;
 
         for (char c : line) {
             // ASCII char to int conversion (implicit cast from char to int)
@@ -31,11 +28,11 @@ vector<vector<int>> parseInput(const string& filename) {
 }
 
 // Find position of the maximum value in the row (excluding the last position)
-size_t posFirstBattery(const vector<int>& row) {
+size_t posFirstBattery(const std::vector<int>& row) {
     int maxValue = 0;
     size_t maxPos = 0;
 
-    for (size_t i = 0; i < row.size() - 1; i++) {
+    for (size_t i = 0; i < row.size() - 1; ++i) {
         if (row[i] > maxValue) {
             maxValue = row[i];
             maxPos = i;
@@ -46,11 +43,11 @@ size_t posFirstBattery(const vector<int>& row) {
 }
 
 // Find position of the maximum value from start + 1 to the end of the row
-size_t posSecondBattery(const vector<int>& row, size_t start) {
+size_t posSecondBattery(const std::vector<int>& row, size_t start) {
     int maxValue = 0;
     size_t maxPos = start + 1;
 
-    for (size_t i = start + 1; i < row.size(); i++) {
+    for (size_t i = start + 1; i < row.size(); ++i) {
         if (row[i] > maxValue) {
             maxValue = row[i];
             maxPos = i;
@@ -61,9 +58,9 @@ size_t posSecondBattery(const vector<int>& row, size_t start) {
 }
 
 // Calculate sum of voltages by combining first and second max digits
-int sumOfVoltage(const vector<vector<int>>& grid) {
-    const string boldOn = "\033[1m";
-    const string boldOff = "\033[0m";
+int sumOfVoltage(const std::vector<std::vector<int>>& grid) {
+    const std::string boldOn = "\033[1m";
+    const std::string boldOff = "\033[0m";
 
     int sum = 0;
 
@@ -72,15 +69,15 @@ int sumOfVoltage(const vector<vector<int>>& grid) {
         size_t secondPos = posSecondBattery(row, firstPos);
 
         // Print row with highlighted positions
-        for (size_t i = 0; i < row.size(); i++) {
+        for (size_t i = 0; i < row.size(); ++i) {
             if (i == firstPos || i == secondPos) {
-                cout << boldOn << row[i] << boldOff;
+                std::cout << boldOn << row[i] << boldOff;
             }
             else {
-                cout << row[i];
+                std::cout << row[i];
             }
         }
-        cout << endl;
+        std::cout << std::endl;
 
         // Combine first and second digit to form a two-digit number
         sum += (row[firstPos] * 10 + row[secondPos]);
@@ -91,14 +88,18 @@ int sumOfVoltage(const vector<vector<int>>& grid) {
 
 int main(int argc, char** argv) {
     if (argc != 2) {
-        cerr << "Usage: " << argv[0] << " <input_file>" << endl;
+        std::cerr << "Usage: " << argv[0] << " <input_file>" << std::endl;
         return 1;
     }
 
-    vector<vector<int>> banksOfbatteries = parseInput(argv[1]);
-    int result = sumOfVoltage(banksOfbatteries);
+    auto puzzleInput = parseInput(argv[1]);
+    if (puzzleInput.empty()) {
+        std::cerr << "Failed to parse input" << std::endl;
+        return 1;
+    }
 
-    cout << "Sum of the maximum voltage: " << result << endl;
+    int result = sumOfVoltage(puzzleInput);
+    std::cout << "Sum of the maximum voltage: " << result << std::endl;
 
     return 0;
 }

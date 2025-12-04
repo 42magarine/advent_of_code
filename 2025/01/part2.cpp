@@ -2,47 +2,44 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include <cstdlib> // exit
-
-using namespace std;
 
 struct Rotation {
     char dir;
     int value;
 };
 
-vector<Rotation> parseInput(const string& filename) {
-    ifstream file(filename);
+std::vector<Rotation> parseInput(const std::string& filename) {
+    std::ifstream file(filename);
     if (!file.is_open()) {
-        cerr << "Could not open file: " << filename << endl;
-        exit(1);
+        std::cerr << "Could not open file: " << filename << std::endl;
+        return {};
     }
 
-    vector<Rotation> input;
-    string line;
+    std::vector<Rotation> input;
+    std::string line;
 
-    while (getline(file, line)) {
+    while (std::getline(file, line)) {
         Rotation r;
         r.dir = line[0];
-        r.value = stoi(line.substr(1));
+        r.value = std::stoi(line.substr(1));
         input.push_back(r);
     }
 
     return input;
 }
 
-int computePassword(const vector<Rotation>& input) {
+int computePassword(const std::vector<Rotation>& input) {
     int dial = 50;
     int count = 0;
 
-    cout << "The dial starts by pointing at " << dial << "." << endl;
+    std::cout << "The dial starts by pointing at " << dial << "." << std::endl;
 
     for (const auto& r : input) {
         int pointAtZero = 0;
 
         if (r.dir == 'L') {
             // Calculate how many full -100 cycles we complete
-            pointAtZero = abs((dial - r.value) / 100);
+            pointAtZero = std::abs((dial - r.value) / 100);
 
             // Check if we cross or land on 0 during the rotation
             // Don't count if we start at 0 (dial != 0)
@@ -65,26 +62,29 @@ int computePassword(const vector<Rotation>& input) {
 
         count += pointAtZero;
 
-        cout << "The dial is rotated " << r.dir << r.value
+        std::cout << "The dial is rotated " << r.dir << r.value
              << " to point at " << dial
              << "; during this rotation, it points at 0 " << pointAtZero
-             << "-times." << endl;
+             << "-times." << std::endl;
     }
 
     return count;
 }
 
-
 int main(int argc, char** argv) {
     if (argc != 2) {
-        cerr << "Usage: " << argv[0] << " <input_file>" << endl;
+        std::cerr << "Usage: " << argv[0] << " <input_file>" << std::endl;
         return 1;
     }
 
-    vector<Rotation> input = parseInput(argv[1]);
-    int password = computePassword(input);
+    auto puzzleInput = parseInput(argv[1]);
+        if (puzzleInput.empty()) {
+        std::cerr << "Failed to parse input" << std::endl;
+        return 1;
+    }
 
-    cout << "Password: " << password << endl;
+    int result = computePassword(puzzleInput);
+    std::cout << "Password: " << result << std::endl;
 
     return 0;
 }
