@@ -18,17 +18,15 @@ std::vector<std::vector<char>> parseInput(const std::string& filename) {
     std::string line;
 
     while (std::getline(file, line)) {
-        // Range constructor: copies characters from [begin, end)
-        std::vector<char> row(line.begin(), line.end());
-        grid.push_back(row);
+        grid.emplace_back(line.begin(), line.end());
     }
 
     return grid;
 }
 
 /**
- * Checks if a position in the grid is blocked (contains '@').
- * Returns true if blocked, false if free or out of bounds.
+ * Checks if a position in the grid contains a paper roll ('@' or 'x').
+ * Returns false if the position is out of bounds or empty.
  */
 bool hasPaperAt(const std::vector<std::vector<char>>& grid, int row, int col) {
     size_t rows = grid.size();
@@ -44,7 +42,7 @@ bool hasPaperAt(const std::vector<std::vector<char>>& grid, int row, int col) {
 }
 
 /**
- * Counts how many of the 8 surrounding cells contain '@'.
+ * Counts how many of the 8 surrounding cells contain paper rolls ('@').
  */
 int countAdjacentPaper(const std::vector<std::vector<char>>& grid, int row, int col) {
     int result = 0;
@@ -69,17 +67,17 @@ int countAdjacentPaper(const std::vector<std::vector<char>>& grid, int row, int 
 }
 
 /**
- * Iterates over all cells marked with '@'
- * and counts how many have fewer than 4 neighbours.
- * markiert alle entfernbaren "rolls of paper" mit 'x'
+ * Marks all removable paper rolls with 'x'.
+ * A paper roll is removable if it has fewer than 4 adjacent paper rolls.
+ * Returns the number of paper rolls marked for removal.
  */
-int countAccessibleCells(std::vector<std::vector<char>>& grid) {
-    int result = 0;
+int markRemovablePaper(std::vector<std::vector<char>>& grid) {
+    int markedCount = 0;
     size_t rows = grid.size();
     size_t cols = grid[0].size();
 
-    for (size_t row = 0; row < rows; row++) {
-        for (size_t col = 0; col < cols; col++) {
+    for (size_t row = 0; row < rows; ++row) {
+        for (size_t col = 0; col < cols; ++col) {
             // Skip positions that aren't marked with '@'
             if (grid[row][col] != '@') {
                 continue;
@@ -88,23 +86,23 @@ int countAccessibleCells(std::vector<std::vector<char>>& grid) {
             int neighbours = countAdjacentPaper(grid, row, col);
             if (neighbours < 4) {
                 grid[row][col] = 'x';
-                result++;
+                ++markedCount;
             }
         }
     }
 
-    return result;
+    return markedCount;
 }
 
 /**
- * entfernt alle entfernbaren (x) "rolls of paper -> '.'.
+ * Removes all marked paper rolls ('x') by replacing them with empty cells ('.').
  */
-void cleanGrid(std::vector<std::vector<char>>& grid) {
+void removeMarkedPaper(std::vector<std::vector<char>>& grid) {
     size_t rows = grid.size();
     size_t cols = grid[0].size();
 
-    for (size_t row = 0; row < rows; row++) {
-        for (size_t col = 0; col < cols; col++) {
+    for (size_t row = 0; row < rows; ++row) {
+        for (size_t col = 0; col < cols; ++col) {
             if (grid[row][col] == 'x') {
                 grid[row][col] = '.';
             }
@@ -113,20 +111,21 @@ void cleanGrid(std::vector<std::vector<char>>& grid) {
 }
 
 /**
- * prüft jeder mal den gesamten grid, ob noch weitere/neue "rolls of paper" entfernt werden können.
+ * Repeatedly removes paper rolls that have fewer than 4 neighbors
+ * until no more can be removed.
+ * Returns the total number of paper rolls removed.
  */
 int removePaper(std::vector<std::vector<char>>& grid) {
-    int result = 0;
-    int removed = 0;
+    int totalRemoved = 0;
+    int removedThisRound = 0;
 
     do {
-        removed = countAccessibleCells(grid);
-        result += removed;
-        cleanGrid(grid);
-    }
-    while (removed);
+        removedThisRound = markRemovablePaper(grid);
+        totalRemoved += removedThisRound;
+        removeMarkedPaper(grid);
+    } while (removedThisRound > 0);
 
-    return result;
+    return totalRemoved;
 }
 
 int main(int argc, char** argv) {
@@ -142,7 +141,7 @@ int main(int argc, char** argv) {
     }
 
     int result = removePaper(puzzleInput);
-    std::cout << "Cells with fewer than 4 neighbours: " << result << std::endl;
+    std::cout << "Total paper rolls removed: " << result << std::endl;
 
     return 0;
 }

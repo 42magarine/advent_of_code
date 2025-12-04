@@ -18,17 +18,15 @@ std::vector<std::vector<char>> parseInput(const std::string& filename) {
     std::string line;
 
     while (std::getline(file, line)) {
-        // Range constructor: copies characters from [begin, end)
-        std::vector<char> row(line.begin(), line.end());
-        grid.push_back(row);
+        grid.emplace_back(line.begin(), line.end());
     }
 
     return grid;
 }
 
 /**
- * Checks if a position in the grid is blocked (contains '@').
- * Returns true if blocked, false if free or out of bounds.
+ * Checks if a position in the grid contains a paper roll ('@').
+ * Returns false if the position is out of bounds or empty.
  */
 bool hasPaperAt(const std::vector<std::vector<char>>& grid, int row, int col) {
     size_t rows = grid.size();
@@ -44,7 +42,7 @@ bool hasPaperAt(const std::vector<std::vector<char>>& grid, int row, int col) {
 }
 
 /**
- * Counts how many of the 8 surrounding cells contain '@'.
+ * Counts how many of the 8 surrounding cells contain paper rolls ('@').
  */
 int countAdjacentPaper(const std::vector<std::vector<char>>& grid, int row, int col) {
     int result = 0;
@@ -72,13 +70,13 @@ int countAdjacentPaper(const std::vector<std::vector<char>>& grid, int row, int 
  * Iterates over all cells marked with '@'
  * and counts how many have fewer than 4 neighbours.
  */
-int countAccessibleCells(const std::vector<std::vector<char>>& grid) {
-    int result = 0;
+int countRemovablePaper(const std::vector<std::vector<char>>& grid) {
+    int count = 0;
     size_t rows = grid.size();
     size_t cols = grid[0].size();
 
-    for (size_t row = 0; row < rows; row++) {
-        for (size_t col = 0; col < cols; col++) {
+    for (size_t row = 0; row < rows; ++row) {
+        for (size_t col = 0; col < cols; ++col) {
             // Skip positions that aren't marked with '@'
             if (grid[row][col] != '@') {
                 continue;
@@ -86,12 +84,12 @@ int countAccessibleCells(const std::vector<std::vector<char>>& grid) {
 
             int neighbours = countAdjacentPaper(grid, row, col);
             if (neighbours < 4) {
-                result++;
+                ++count;
             }
         }
     }
 
-    return result;
+    return count;
 }
 
 int main(int argc, char** argv) {
@@ -106,7 +104,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    int result = countAccessibleCells(puzzleInput);
+    int result = countRemovablePaper(puzzleInput);
     std::cout << "Cells with fewer than 4 neighbours: " << result << std::endl;
 
     return 0;
