@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <cctype>
 
 /**
  * Reads the input file into a 2D character grid
@@ -24,56 +25,48 @@ std::vector<std::vector<char>> parseInput(const std::string& filename) {
 }
 
 /**
- * Checks if a character is a digit
- */
-bool isDigit(char c) {
-    return c >= '0' && c <= '9';
-}
-
-/**
  * Solves math worksheet by reading columns right-to-left.
  * Each column forms a number (top-to-bottom), problems are separated by spaces
  */
 long solveMathHomework(const std::vector<std::vector<char>>& grid) {
     long grandTotal = 0;
+    int rows = grid.size();
+    int cols = grid[0].size();
     std::vector<int> numbers;
-    int lastRow = grid.size() - 1;
 
     // Read columns from right to left
-    for (int x = (int)grid[0].size() - 1; x >= 0; --x) {
+    for (int x = cols - 1; x >= 0; --x) {
         // Read the number from this column (top to bottom, excluding last row)
         int number = 0;
 
-        for (size_t y = 0; y < grid.size() - 1; ++y) {
-            if (isDigit(grid[y][x])) {
-                number = number * 10 + (grid[y][x] - '0');
+        for (int y = 0; y < rows - 1; ++y) {
+            char c = grid[y][x];
+            if (std::isdigit(c)) {
+                number = number * 10 + (c - '0');
             }
         }
         numbers.push_back(number);
 
-        char op = grid[lastRow][x];
-
         // Check if this column contains an operator in the last row
-        if (op != '+' && op != '*') {
-            continue;
-        }
+        char op = grid[rows - 1][x];
+
         // Calculate result for current problem
-        else {
+        if (op == '+' || op == '*') {
             long result = (op == '+') ? 0 : 1;
 
             if (op == '+') {
-                for (int num : numbers) {
-                    result += num;
+                for (int n : numbers) {
+                    result += n;
                 }
             }
-            else if (op == '*') {
-                for (int num : numbers) {
-                    result *= num;
+            else {  // op == '*'
+                for (int n : numbers) {
+                    result *= n;
                 }
             }
 
-            numbers.clear();
             grandTotal += result;
+            numbers.clear();
             --x;  // Skip the next column (it's always a space separator)
         }
     }
