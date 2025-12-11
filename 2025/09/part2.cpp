@@ -52,65 +52,66 @@ bool isPointInPolygon(const std::vector<std::pair<int, int>>& points,
     for (int i = 0; i < n; ++i) {
         int j = (i + 1) % n;  // The points wraps, so the first point is also connected to the last point.
 
-        int x1 = points[i].first;  // x1 == x2
-        // int x2 = points[j].first;
+        int x1 = points[i].first;
         int y1 = points[i].second;
+        int x2 = points[j].first;
         int y2 = points[j].second;
 
-        // horizontale Kante skippen
-        if (y1 == y2) {
-            continue;
-        }
+        // Nur vertikale Kanten betrachten (horizontale überspringen)
+        if (x1 == x2) {
+            // Vertikale Kante
+            int minY = std::min(y1, y2);
+            int maxY = std::max(y1, y2);
 
-        // check: liegt py zwischen y1 und y2?
-        if (py < std::min(y1, y2) || py > std::max(y1, y2)) {
-            continue;
-        }
+            // Prüfe ob der Punkt auf der richtigen Höhe ist
+            if (py >= minY && py < maxY) {
+                // Liegt die Kante rechts vom Punkt?
+                if (x1 > px) {
+                    count++;
+                }
+            }
 
-        // schneidet rechts vom Punkt?
-        if (x1 > px) {
-            count++;
         }
     }
-    // std::cout << " count: " << count;
-    return count % 2 == 1;  // 1 (ungerade) = true / 0 (gerade) = false
+
+    // 1 (ungerade) = true / 0 (gerade) = false
+    return count % 2 == 1;
 }
 
-long findLargestRectangle(const std::vector<std::pair<int, int>>& points) {
-    long maxArea = 0;
+bool isPointInPoints(const std::vector<std::pair<int,int>>& pts,
+                     const std::pair<int,int>& p) {
+    return std::find(pts.begin(), pts.end(), p) != pts.end();
+}
+
+long long findLargestRectangle(const std::vector<std::pair<int, int>>& points) {
+    long long maxArea = 0;
     int numPoints = points.size();
 
     // Try all possible pairs of points as opposite corners
     for (int i = 0; i < numPoints; ++i) {
         for (int j = i + 1; j < numPoints; ++j) {
-            // corner1 = points[i] and corner2 = points[j]
-            std::pair<int, int> corner3 = {points[i].first, points[j].second};
-            std::pair<int, int> corner4 = {points[j].first, points[i].second};
+            int x1 = points[i].first;
+            int y1 = points[i].second;
+            int x2 = points[j].first;
+            int y2 = points[j].second;
 
+            std::pair<int, int> corner3 = {x1, y2};
+            std::pair<int, int> corner4 = {x2, y1};
 
+            bool c3Valid = isPointInPoints(points, corner3) ||
+                           isPointInPolygon(points, corner3);
 
-            // pointC+D berechnen, wieviele Kanten ein Strahl nach rechts trifft
-            // wenn gerade -> continue
-            // wenn ungerade -> fläche berechnen und speichern
-            if (!isPointInPolygon(points, corner3)) {
-                // std::cout << " false\n";
+            bool c4Valid = isPointInPoints(points, corner4) ||
+                           isPointInPolygon(points, corner4);
+
+            if (!c3Valid || !c4Valid) {
                 continue;
             }
-            // std::cout << " true ";
-            if (!isPointInPolygon(points, corner4)) {
-                // std::cout << " false\n";
-                continue;
-            }
-            // std::cout << " true\n";
 
-            std::cout << "  A: (" << points[i].first << ", " << points[i].second << ")";
-            std::cout << "  B: (" << points[j].first << ", " << points[j].second << ")";
-            std::cout << "  C: (" << corner3.first << ", " << corner3.second << ")";
-            std::cout << "  D: (" << corner4.first << ", " << corner4.second << ")\n";
+            long long width = std::abs(x2 - x1) + 1;
+            long long height = std::abs(y2 - y1) + 1;
+            long long area = width * height;
 
-            long width = std::abs(points[j].first - points[i].first) + 1;
-            long height = std::abs(points[j].second - points[i].second) + 1;
-            long area = width * height;
             maxArea = std::max(maxArea, area);
         }
     }
@@ -130,7 +131,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    long result = findLargestRectangle(points);
+    long long result = findLargestRectangle(points);
     std::cout << "Largest rectangle area: " << result << std::endl;
 
     return 0;
